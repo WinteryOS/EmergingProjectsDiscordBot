@@ -5,6 +5,10 @@ import discord
 from serpapi import GoogleSearch
 import json
 
+# @Client.command()
+# async def foo(ctx, arg):
+#     await ctx.send(arg)
+
 #SERPAPI_KEY = "9a44608178a3b7ad9888bb12ed05a1992916835b8af2d5bc1fc164a5f8b1201d";
 keywords = [
   "Coffee",
