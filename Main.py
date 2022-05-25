@@ -3,6 +3,8 @@ import os
 import discord
 from discord.ext import commands
 from discord.ext.commands import Bot
+from urllib import parse, request
+import json
 import asyncio
 bot = Bot("$")
 
@@ -27,10 +29,25 @@ async def test(ctx, arg):
 
     
 @bot.command()
-async def pages(ctx):
-    pages = 4
+async def pages(ctx, arg):
     cur_page = 1
-    contents = ["This is page 1!", "This is page 2!", "This is page 3!", "This is page 4!"]
+
+    url = "http://api.giphy.com/v1/gifs/search"
+
+    params = parse.urlencode({
+        "q": arg,
+        "api_key": "E4ZP12SKQWFZl4VKhlpkOJc26LSi2eyb",
+        "limit": "5"
+    })
+
+    contents = []
+    with request.urlopen("".join((url, "?", params))) as response:
+        data = json.loads(response.read())
+    for x in data["data"]:
+        contents.append(x['embed_url'])
+
+
+    pages = len(contents)
     embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
     embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
     embed.set_footer(text="footer")
@@ -44,17 +61,15 @@ async def pages(ctx):
 
     def check(reaction, user):
         return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
-        # This makes sure nobody except the command sender can interact with the "menu"
-
     while True:
         try:
             reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
-            # waiting for a reaction to be added - times out after x seconds, 60 in this
-            # example
 
             if str(reaction.emoji) == "▶️" and cur_page != pages:
                 cur_page += 1
                 new_embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                embed.set_image(url=contents[cur_page-1])
+                print(contents[cur_page-1])
                 new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
                 new_embed.set_footer(text="footer")
                 await message.edit(embed=new_embed)
@@ -63,6 +78,7 @@ async def pages(ctx):
             elif str(reaction.emoji) == "◀️" and cur_page > 1:
                 cur_page -= 1
                 new_embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed.set_image(url=contents[cur_page-1])
                 new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
                 new_embed.set_footer(text="footer")
                 await message.edit(embed=new_embed)
@@ -76,6 +92,8 @@ async def pages(ctx):
             await message.delete()
             break
             # ending 
+
+
 
 
 @client.event
