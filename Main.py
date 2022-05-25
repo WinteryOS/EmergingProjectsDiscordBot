@@ -58,8 +58,10 @@ async def group_img(ctx, arg):
     for match in matches:
         print(match)
     
-    for i in range(item_num, item_num+5):
-        await ctx.send(matches[i])
+    #for i in range(item_num, item_num+5):
+        #await ctx.send(matches[i])
+
+    ctx.send(matches)
     
 
 client.run(os.getenv('TOKEN'))
