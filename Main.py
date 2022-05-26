@@ -7,6 +7,8 @@ from urllib import parse, request
 import json
 import asyncio
 import re
+from urllib.request import urlopen
+
 
 bot = Bot("$")
 
@@ -33,6 +35,7 @@ async def test(ctx, arg):
 @bot.command()
 async def img(ctx, arg):
     global item_num
+    item_num = 0
     url = "https://serpapi.com/search.json?engine=google&q="+arg+"&google_domain=google.com&gl=us&hl=en&tbm=isch&api_key=e943bb910496b0c2f927da2a95bc84819d19c75b8811a84d6375792693177796"
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     response = urlopen(url)
