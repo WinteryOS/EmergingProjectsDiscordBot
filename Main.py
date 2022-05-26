@@ -6,6 +6,8 @@ from discord.ext.commands import Bot
 from urllib import parse, request
 import json
 import asyncio
+import re
+
 bot = Bot("$")
 
 
@@ -28,6 +30,30 @@ async def test(ctx, arg):
     await ctx.send(arg)
 
     
+@bot.command()
+async def img(ctx, arg):
+    global item_num
+    url = "https://serpapi.com/search.json?engine=google&q="+arg+"&google_domain=google.com&gl=us&hl=en&tbm=isch&api_key=e943bb910496b0c2f927da2a95bc84819d19c75b8811a84d6375792693177796"
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    response = urlopen(url)
+    #data_json = json.loads(response.read())
+    data_json = response.read()
+    #print(data_json)
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+
+    IMG_REG = r"thumbnail\": \"(https:.+?)\""
+    matches = re.findall(IMG_REG, str(data_json))
+    for match in matches:
+        print(match)
+        five_items = ""
+    for i in range(item_num+5, item_num+10):
+        five_items += matches[i] + "\n"
+        #await ctx.send(matches[i])
+    await ctx.send(five_items)
+    #five_items = ""
+    item_num = item_num + 5
+
 @bot.command()
 async def pages(ctx, arg):
     cur_page = 1
