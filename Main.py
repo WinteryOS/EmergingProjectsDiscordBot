@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 load_dotenv('.env')
 
 client = discord.Client()
+# bot = commands.Bot(command_prefix='$')
+bot = Bot("$")
 search_term = ""
 
 params = {
@@ -19,32 +21,30 @@ params = {
 search = GoogleSearch(params)
 results = search.get_dict()
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
+# @client.event
+# async def on_message(message):
+#     if message.author == client.user:
+#         return
+    
+#     if message.content.startswith('$Are you a robot Goigle'):
+#         await message.channel.send('Heavens no, I\'m the real deal')
+
+@bot.command()
+async def search(ctx, arg):
+    await ctx.send(arg)
+
+    if ctx.author == client.user:
         return
     
-    if message.content.startswith('$Are you a robot Goigle'):
-        await message.channel.send('Heavens no, I\'m the real deal')
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-    
-    if message.content.startswith('$search'):
-        await message.channel.send('What would you like to search?')
-
-        while True:
-            user_input = client.wait_for('message')
-            if user_input.author == message.author:
-                search_term.this = user_input.content
+    user_input = ctx.arg
+    if user_input.author == ctx.author:
+        search_term.this == user_input.content
 
     for organic_results in results.get("organic_results", []):
         position = organic_results.get("position", None)
         title = organic_results.get("title", "")
         snippet = organic_results.get("snippet", "")
 
-        await message.channel.send(f"Position: {position}\nTitle: {title}\nSnippet: {snippet}\n\n")
+        await ctx.channel.send(f"Position: {position}\nTitle: {title}\nSnippet: {snippet}\n\n")
 
 client.run(os.getenv('TOKEN'))
