@@ -7,10 +7,9 @@ from urllib import parse, request
 import json
 import asyncio
 import re
+from serpapi import GoogleSearch
 
 bot = Bot("$")
-
-
 
 from dotenv import load_dotenv
 load_dotenv('.env')
@@ -119,8 +118,37 @@ async def pages(ctx, arg):
             break
             # ending 
 
+@bot.command()
+async def search(ctx, arg):
+    await ctx.send(arg)
 
+    params = {
+    "q": arg,
+    "hl": "en",
+    "gl": "us",
+    "api_key": "c0e876ed96a74081c2761bf2fb3afd36986176c4d8ff6c9dfab6f6ebaf7d2ded"
+    }
 
+    search = GoogleSearch(params)
+    results = search.get_dict()
+
+    print(results)
+
+    # if ctx.author == client.user:
+    #     return
+    
+    user_input = arg
+    x = 1
+    if x == 1:
+    # if user_input.author == ctx.author:
+    #     search_term.this == user_input.content
+
+        for organic_results in results.get("organic_results", []):
+            position = organic_results.get("position", None)
+            title = organic_results.get("title", "")
+            snippet = organic_results.get("snippet", "")
+
+            await ctx.channel.send(f"Position: {position}\nTitle: {title}\nSnippet: {snippet}\n\n")
 
 @client.event
 async def on_ready():
