@@ -30,6 +30,39 @@ client = commands.Bot(command_prefix="$")
 async def test(ctx, arg):
     await ctx.send(arg)
 
+@bot.command()
+async def url(ctx, arg):
+  search = GoogleSearch({"api_key": "9a44608178a3b7ad9888bb12ed05a1992916835b8af2d5bc1fc164a5f8b1201d"})  
+# data = response_API.text
+# parse_json = json.loads(data)
+# link = parse_json['organic_results']['']['link']
+
+#for keyword in keywords:
+  # search = GoogleSearch({"api_key": os.getenv("SERPAPI_KEY")})
+  results = []
+  search.params_dict['q'] = arg
+ 
+  result = search.get_dict()
+
+  print(f"Top 5 results for '{arg}':")
+ 
+  for organic_results in result.get("organic_results", [])[:5]:
+    position = organic_results.get("position", None)
+    title = organic_results.get("title", "")
+    link = organic_results.get("link", "")
+    #results.append(f"'''Title: {title} \nPosition: {position} \nLink: {link}'''")
+    formattedStr = f"Title: {title} \nPosition: {position} \nLink: {link}"
+    results.append(formattedStr)
+
+
+
+    #print(f"Title: {title}\nPosition: {position}\nLink: {link}")
+
+    #print(result)
+    
+    await ctx.send(f"Title: {title}\nPosition: {position}\nLink: {link}")
+
+
     
 @bot.command()
 async def img(ctx, arg):
