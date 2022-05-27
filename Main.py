@@ -1,28 +1,77 @@
 from http import client
 import os
-from urllib import response
-from urllib.request import urlopen
+import discord
 from discord.ext import commands
+from discord.ext.commands import Bot
+from urllib import parse, request
+import json
+import asyncio
 import re
+from serpapi import GoogleSearch
+from urllib.request import urlopen
+
+
+bot = Bot("$")
 
 from dotenv import load_dotenv
 load_dotenv('.env')
 
-client = commands.Bot(command_prefix='$')
+client = commands.Bot(command_prefix="$")
 
-global item_num
-item_num = 0
+# @client.event
+# async def on_message(message):
+#     if message.author == client.user:
+#         return
+    
+#     if message.content.startswith( prefix + 'Are you a robot Goigle'):
+#         await message.channel.send('Heavens no, I\'m the real deal')
 
-@client.command()
-async def ping(ctx):
-    await ctx.send('https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/A_small_cup_of_coffee.JPG/1200px-A_small_cup_of_coffee.JPG')
-
-@client.command()
+@bot.command()
 async def test(ctx, arg):
     await ctx.send(arg)
 
-@client.command()
+@bot.command()
+async def help(ctx, arg):
+    await ctx.send("|$img ___ (for images)| $url ___ (for urls) | $search ___ (for discriptions)")
+
+@bot.command()
+async def url(ctx, arg):
+  search = GoogleSearch({"api_key": "9a44608178a3b7ad9888bb12ed05a1992916835b8af2d5bc1fc164a5f8b1201d"})  
+# data = response_API.text
+# parse_json = json.loads(data)
+# link = parse_json['organic_results']['']['link']
+
+#for keyword in keywords:
+  # search = GoogleSearch({"api_key": os.getenv("SERPAPI_KEY")})
+  results = []
+  search.params_dict['q'] = arg
+ 
+  result = search.get_dict()
+
+  print(f"Top 5 results for '{arg}':")
+ 
+  for organic_results in result.get("organic_results", [])[:5]:
+    position = organic_results.get("position", None)
+    title = organic_results.get("title", "")
+    link = organic_results.get("link", "")
+    #results.append(f"'''Title: {title} \nPosition: {position} \nLink: {link}'''")
+    formattedStr = f"Title: {title} \nPosition: {position} \nLink: {link}"
+    results.append(formattedStr)
+
+
+
+    #print(f"Title: {title}\nPosition: {position}\nLink: {link}")
+
+    #print(result)
+    
+    await ctx.send(f"Title: {title}\nPosition: {position}\nLink: {link}")
+
+
+    
+@bot.command()
 async def img(ctx, arg):
+    global item_num
+    item_num = 0
     url = "https://serpapi.com/search.json?engine=google&q="+arg+"&google_domain=google.com&gl=us&hl=en&tbm=isch&api_key=e943bb910496b0c2f927da2a95bc84819d19c75b8811a84d6375792693177796"
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     response = urlopen(url)
@@ -32,36 +81,117 @@ async def img(ctx, arg):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
-    #IMG_REG = '(images_results\": )(\[((.*)([\n\t]))*\])'
     IMG_REG = r"thumbnail\": \"(https:.+?)\""
     matches = re.findall(IMG_REG, str(data_json))
     for match in matches:
         print(match)
-    
-    for i in range(item_num, item_num+5):
-        await ctx.send(matches[i])
-
-@client.command()
-async def group_img(ctx, arg):
-    url = "https://serpapi.com/search.json?engine=google&q="+arg+"&google_domain=google.com&gl=us&hl=en&tbm=isch&api_key=e943bb910496b0c2f927da2a95bc84819d19c75b8811a84d6375792693177796"
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    response = urlopen(url)
-    #data_json = json.loads(response.read())
-    data_json = response.read()
-    #print(data_json)
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-
-
-    #IMG_REG = '(images_results\": )(\[((.*)([\n\t]))*\])'
-    IMG_REG = r"thumbnail\": \"(https:.+?)\""
-    matches = re.findall(IMG_REG, str(data_json))
-    for match in matches:
-        print(match)
-    
-    #for i in range(item_num, item_num+5):
+        five_items = ""
+    for i in range(item_num+5, item_num+10):
+        five_items += matches[i] + "\n"
         #await ctx.send(matches[i])
+    await ctx.send(five_items)
+    #five_items = ""
+    item_num = item_num + 5
 
-    ctx.send(matches)
+@bot.command()
+async def pages(ctx, arg):
+    cur_page = 1
+
+    url = "http://api.giphy.com/v1/gifs/search"
+
+    params = parse.urlencode({
+        "q": arg,
+        "api_key": "E4ZP12SKQWFZl4VKhlpkOJc26LSi2eyb",
+        "limit": "5"
+    })
+
+    contents = []
+    with request.urlopen("".join((url, "?", params))) as response:
+        data = json.loads(response.read())
+    for x in data["data"]:
+        contents.append(x['embed_url'])
+
+
+    pages = len(contents)
+    embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+    embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+    embed.set_footer(text="footer")
+    message = await ctx.send(embed=embed)
+    # getting the message object for editing and reacting
+
+    await message.add_reaction("◀️")
+    await message.add_reaction("▶️")
+
+    print(ctx.author)
+
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+
+            if str(reaction.emoji) == "▶️" and cur_page != pages:
+                cur_page += 1
+                new_embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                embed.set_image(url=contents[cur_page-1])
+                print(contents[cur_page-1])
+                new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+                new_embed.set_footer(text="footer")
+                await message.edit(embed=new_embed)
+                await message.remove_reaction(reaction, user)
+
+            elif str(reaction.emoji) == "◀️" and cur_page > 1:
+                cur_page -= 1
+                new_embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed.set_image(url=contents[cur_page-1])
+                new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+                new_embed.set_footer(text="footer")
+                await message.edit(embed=new_embed)
+                await message.remove_reaction(reaction, user)
+
+            else:
+                await message.remove_reaction(reaction, user)
+                # removes reactions if the user tries to go forward on the last page or
+                # backwards on the first page
+        except asyncio.TimeoutError:
+            await message.delete()
+            break
+            # ending 
+
+@bot.command()
+async def search(ctx, arg):
+    await ctx.send(arg)
+
+    params = {
+    "q": arg,
+    "hl": "en",
+    "gl": "us",
+    "api_key": "c0e876ed96a74081c2761bf2fb3afd36986176c4d8ff6c9dfab6f6ebaf7d2ded"
+    }
+
+    search = GoogleSearch(params)
+    results = search.get_dict()
+
+    print(results)
+
+    # if ctx.author == client.user:
+    #     return
     
+    user_input = arg
+    x = 1
+    if x == 1:
+    # if user_input.author == ctx.author:
+    #     search_term.this == user_input.content
 
-client.run(os.getenv('TOKEN'))
+        for organic_results in results.get("organic_results", []):
+            position = organic_results.get("position", None)
+            title = organic_results.get("title", "")
+            snippet = organic_results.get("snippet", "")
+
+            await ctx.channel.send(f"Position: {position}\nTitle: {title}\nSnippet: {snippet}\n\n")
+
+@client.event
+async def on_ready():
+    print(f'{client.user.name} has connected to Discord!')
+
+bot.run(os.getenv('TOKEN'))
