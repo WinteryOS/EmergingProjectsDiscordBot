@@ -10,7 +10,6 @@ import re
 from serpapi import GoogleSearch
 from urllib.request import urlopen
 
-
 bot = Bot("$")
 
 from dotenv import load_dotenv
@@ -173,22 +172,15 @@ async def search(ctx, arg):
     results = search.get_dict()
 
     print(results)
-
-    # if ctx.author == client.user:
-    #     return
     
-    user_input = arg
-    x = 1
-    if x == 1:
-    # if user_input.author == ctx.author:
-    #     search_term.this == user_input.content
+    # x = 1
+    # if x == 1:
+    for organic_results in results.get("organic_results", [])[:5]:
+        position = organic_results.get("position", None)
+        title = organic_results.get("title", "")
+        snippet = organic_results.get("snippet", "")
 
-        for organic_results in results.get("organic_results", []):
-            position = organic_results.get("position", None)
-            title = organic_results.get("title", "")
-            snippet = organic_results.get("snippet", "")
-
-            await ctx.channel.send(f"Position: {position}\nTitle: {title}\nSnippet: {snippet}\n\n")
+        await ctx.channel.send(f"Result #{position}:\nTitle: {title}\nSnippet: {snippet}\n\n")
 
 @client.event
 async def on_ready():
