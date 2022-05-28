@@ -90,7 +90,7 @@ async def img(ctx, arg):
     item_num = item_num + 5
 
 @bot.command()
-async def pages(ctx, arg):
+async def giphy(ctx, arg):
     cur_page = 1
 
     url = "http://api.giphy.com/v1/gifs/search"
@@ -104,12 +104,16 @@ async def pages(ctx, arg):
     contents = []
     with request.urlopen("".join((url, "?", params))) as response:
         data = json.loads(response.read())
-    for x in data["data"]:
-        contents.append(x['embed_url'])
+    for z in range(0,5):
+        contents.append(data['data'][z]['images']['original']['url'])
+        print(data['data'][z]['images']['original']['url'])
 
 
+
+    print(contents)
     pages = len(contents)
     embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+    embed.set_image(url=contents[0])
     embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
     embed.set_footer(text="footer")
     message = await ctx.send(embed=embed)
@@ -129,7 +133,7 @@ async def pages(ctx, arg):
             if str(reaction.emoji) == "▶️" and cur_page != pages:
                 cur_page += 1
                 new_embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
-                embed.set_image(url=contents[cur_page-1])
+                new_embed.set_image(url=contents[cur_page-1])
                 print(contents[cur_page-1])
                 new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
                 new_embed.set_footer(text="footer")
