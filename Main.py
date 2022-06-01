@@ -31,35 +31,66 @@ async def test(ctx, arg):
 
 @bot.command()
 async def url(ctx, arg):
-  search = GoogleSearch({"api_key": "9a44608178a3b7ad9888bb12ed05a1992916835b8af2d5bc1fc164a5f8b1201d"})  
-# data = response_API.text
-# parse_json = json.loads(data)
-# link = parse_json['organic_results']['']['link']
+    search = GoogleSearch({"api_key": "9a44608178a3b7ad9888bb12ed05a1992916835b8af2d5bc1fc164a5f8b1201d"})  
 
-#for keyword in keywords:
-  # search = GoogleSearch({"api_key": os.getenv("SERPAPI_KEY")})
-  results = []
-  search.params_dict['q'] = arg
+    results = []
+    search.params_dict['q'] = arg
  
-  result = search.get_dict()
+    result = search.get_dict()
 
-  print(f"Top 5 results for '{arg}':")
+    cur_page = 1
+    contents = []
+
+    print(f"Top 5 results for '{arg}':")
  
-  for organic_results in result.get("organic_results", [])[:5]:
-    position = organic_results.get("position", None)
-    title = organic_results.get("title", "")
-    link = organic_results.get("link", "")
-    #results.append(f"'''Title: {title} \nPosition: {position} \nLink: {link}'''")
-    formattedStr = f"Title: {title} \nPosition: {position} \nLink: {link}"
-    results.append(formattedStr)
+    for organic_results in result.get("organic_results", [])[:5]:
+        position = organic_results.get("position", None)
+        title = organic_results.get("title", "")
+        link = organic_results.get("link", "")
+        formattedStr = f"Title: {title} \nPosition: {position} \nLink: {link}"
+        results.append(formattedStr)
+        await ctx.send(f"Title: {title}\nPosition: {position}\nLink: {link}")
 
+    pages = len(contents)
+    embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+    embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+    embed.set_footer(text="footer")
+    message = await ctx.send(embed=embed)
 
+    await message.add_reaction("◀️")
+    await message.add_reaction("▶️")
 
-    #print(f"Title: {title}\nPosition: {position}\nLink: {link}")
+    print(ctx.author)
 
-    #print(result)
-    
-    await ctx.send(f"Title: {title}\nPosition: {position}\nLink: {link}")
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
+
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+
+            if str(reaction.emoji) == "▶️" and cur_page != pages:
+                cur_page += 1
+                new_embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+                new_embed.set_footer(text="footer")
+                await message.edit(embed=new_embed)
+                await message.remove_reaction(reaction, user)
+
+            elif str(reaction.emoji) == "◀️" and cur_page > 1:
+                cur_page -= 1
+                new_embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+                new_embed.set_footer(text="footer")
+                await message.edit(embed=new_embed)
+                await message.remove_reaction(reaction, user)
+
+            else:
+                await message.remove_reaction(reaction, user)
+
+        except asyncio.TimeoutError:
+            await message.delete()
+            break
 
 
     
