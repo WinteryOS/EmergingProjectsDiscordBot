@@ -171,16 +171,61 @@ async def search(ctx, arg):
     search = GoogleSearch(params)
     results = search.get_dict()
 
-    print(results)
+    cur_page = 1
+    contents = []
     
-    # x = 1
-    # if x == 1:
     for organic_results in results.get("organic_results", [])[:5]:
         position = organic_results.get("position", None)
         title = organic_results.get("title", "")
         snippet = organic_results.get("snippet", "")
 
-        await ctx.channel.send(f"Result #{position}:\nTitle: {title}\nSnippet: {snippet}\n\n")
+        # await ctx.channel.send(f"Result #{position}:\nTitle: {title}\nSnippet: {snippet}\n\n")
+
+        desc = f"\nTitle: {title}\nSnippet: {snippet}\n\n"
+
+        contents.append(desc)
+        print(contents)
+
+    pages = len(contents)
+    embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+    embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+    embed.set_footer(text="footer")
+    message = await ctx.send(embed=embed)
+
+    await message.add_reaction("◀️")
+    await message.add_reaction("▶️")
+
+    print(ctx.author)
+
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
+
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+
+            if str(reaction.emoji) == "▶️" and cur_page != pages:
+                cur_page += 1
+                new_embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+                new_embed.set_footer(text="footer")
+                await message.edit(embed=new_embed)
+                await message.remove_reaction(reaction, user)
+
+            elif str(reaction.emoji) == "◀️" and cur_page > 1:
+                cur_page -= 1
+                new_embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+                new_embed.set_footer(text="footer")
+                await message.edit(embed=new_embed)
+                await message.remove_reaction(reaction, user)
+
+            else:
+                await message.remove_reaction(reaction, user)
+
+        except asyncio.TimeoutError:
+            await message.delete()
+            break
 
 @client.event
 async def on_ready():
