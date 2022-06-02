@@ -91,8 +91,6 @@ async def url(ctx, arg):
         except asyncio.TimeoutError:
             await message.delete()
             break
-
-
     
 @bot.command()
 async def img(ctx, arg):
@@ -137,8 +135,6 @@ async def giphy(ctx, arg):
     for z in range(0,5):
         contents.append(data['data'][z]['images']['original']['url'])
         print(data['data'][z]['images']['original']['url'])
-
-
 
     print(contents)
     pages = len(contents)
