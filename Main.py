@@ -31,6 +31,8 @@ async def test(ctx, arg):
 
 @bot.command()
 async def url(ctx, arg):
+    await ctx.send(arg)
+
     search = GoogleSearch({"api_key": "9a44608178a3b7ad9888bb12ed05a1992916835b8af2d5bc1fc164a5f8b1201d"})  
 
     results = []
@@ -47,12 +49,18 @@ async def url(ctx, arg):
         position = organic_results.get("position", None)
         title = organic_results.get("title", "")
         link = organic_results.get("link", "")
-        formattedStr = f"Title: {title} \nPosition: {position} \nLink: {link}"
-        results.append(formattedStr)
-        await ctx.send(f"Title: {title}\nPosition: {position}\nLink: {link}")
+        # formattedStr = f"Title: {title} \nPosition: {position} \nLink: {link}"
+        # results.append(formattedStr)
+        
+        # await ctx.send(f"Title: {title}\nPosition: {position}\nLink: {link}")
+
+        desc = f"\nTitle: {title}\Link: {link}\n\n"
+
+        contents.append(desc)
+        print(contents)
 
     pages = len(contents)
-    embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+    embed=discord.Embed(title="URL results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
     embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
     embed.set_footer(text="footer")
     message = await ctx.send(embed=embed)
@@ -71,7 +79,7 @@ async def url(ctx, arg):
 
             if str(reaction.emoji) == "▶️" and cur_page != pages:
                 cur_page += 1
-                new_embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed=discord.Embed(title="URL results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
                 new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
                 new_embed.set_footer(text="footer")
                 await message.edit(embed=new_embed)
@@ -79,7 +87,7 @@ async def url(ctx, arg):
 
             elif str(reaction.emoji) == "◀️" and cur_page > 1:
                 cur_page -= 1
-                new_embed=discord.Embed(title="Search results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed=discord.Embed(title="URL results", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
                 new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
                 new_embed.set_footer(text="footer")
                 await message.edit(embed=new_embed)
