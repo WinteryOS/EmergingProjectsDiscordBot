@@ -30,7 +30,16 @@ async def test(ctx, arg):
     await ctx.send(arg)
 
 @bot.command()
+async def helper(ctx):
+    await ctx.send("$img ___ (for images)")
+    await ctx.send("$giphy ___ (for gifs)")
+    await ctx.send("$url ___ (for urls)")
+    await ctx.send("$search ___ (for discriptions)")
+
+@bot.command()
 async def url(ctx, arg):
+    await ctx.send("Loading...")
+
     search = GoogleSearch({"api_key": "9a44608178a3b7ad9888bb12ed05a1992916835b8af2d5bc1fc164a5f8b1201d"})  
 
     results = []
@@ -91,34 +100,10 @@ async def url(ctx, arg):
         except asyncio.TimeoutError:
             await message.delete()
             break
-    
+
 @bot.command()
 async def img(ctx, arg):
-    global item_num
-    item_num = 0
-    url = "https://serpapi.com/search.json?engine=google&q="+arg+"&google_domain=google.com&gl=us&hl=en&tbm=isch&api_key=e943bb910496b0c2f927da2a95bc84819d19c75b8811a84d6375792693177796"
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-    response = urlopen(url)
-    #data_json = json.loads(response.read())
-    data_json = response.read()
-    #print(data_json)
-    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-
-
-    IMG_REG = r"thumbnail\": \"(https:.+?)\""
-    matches = re.findall(IMG_REG, str(data_json))
-    for match in matches:
-        print(match)
-        five_items = ""
-    for i in range(item_num+5, item_num+10):
-        five_items += matches[i] + "\n"
-        #await ctx.send(matches[i])
-    await ctx.send(five_items)
-    #five_items = ""
-    item_num = item_num + 5
-
-@bot.command()
-async def img_page(ctx, arg):
+    await ctx.send("Loading...")
     cur_page = 1
 
     global item_num
@@ -185,6 +170,8 @@ async def img_page(ctx, arg):
 
 @bot.command()
 async def giphy(ctx, arg):
+    await ctx.send("Loading...")
+
     cur_page = 1
 
     url = "http://api.giphy.com/v1/gifs/search"
@@ -252,7 +239,7 @@ async def giphy(ctx, arg):
 
 @bot.command()
 async def search(ctx, arg):
-    await ctx.send(arg)
+    await ctx.send("Loading...")
 
     params = {
     "q": arg,
@@ -325,3 +312,28 @@ async def on_ready():
     print(f'{client.user.name} has connected to Discord!')
 
 bot.run(os.getenv('TOKEN'))
+
+# @bot.command()
+# async def img(ctx, arg):
+#     global item_num
+#     item_num = 0
+#     url = "https://serpapi.com/search.json?engine=google&q="+arg+"&google_domain=google.com&gl=us&hl=en&tbm=isch&api_key=e943bb910496b0c2f927da2a95bc84819d19c75b8811a84d6375792693177796"
+#     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+#     response = urlopen(url)
+#     #data_json = json.loads(response.read())
+#     data_json = response.read()
+#     #print(data_json)
+#     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+
+#     IMG_REG = r"thumbnail\": \"(https:.+?)\""
+#     matches = re.findall(IMG_REG, str(data_json))
+#     for match in matches:
+#         print(match)
+#         five_items = ""
+#     for i in range(item_num+5, item_num+10):
+#         five_items += matches[i] + "\n"
+#         #await ctx.send(matches[i])
+#     await ctx.send(five_items)
+#     #five_items = ""
+#     item_num = item_num + 5
