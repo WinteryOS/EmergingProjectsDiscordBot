@@ -32,7 +32,7 @@ async def test(ctx, arg):
 
 @bot.command()
 async def helper(ctx, arg):
-    await ctx.send("|$img ___ (for images)| $url ___ (for urls) | $search ___ (for discriptions)")
+    await ctx.send("|$img ___ (for images)| $img_page ___ (for single images) | $giphy ___ (for gifs) | $url ___ (for urls) | $search ___ (for discriptions)")
 
 @bot.command()
 async def url(ctx, arg):
@@ -67,7 +67,6 @@ async def url(ctx, arg):
     await ctx.send(f"Title: {title}\nPosition: {position}\nLink: {link}")
 
 
-    
 @bot.command()
 async def img(ctx, arg):
     global item_num
@@ -161,7 +160,6 @@ async def giphy(ctx, arg):
             await message.delete()
             break
             # ending 
-
 
 @bot.command()
 async def img_page(ctx, arg):
