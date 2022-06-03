@@ -118,6 +118,72 @@ async def img(ctx, arg):
     item_num = item_num + 5
 
 @bot.command()
+async def img_page(ctx, arg):
+    cur_page = 1
+
+    global item_num
+    item_num = 0
+    url = "https://serpapi.com/search.json?engine=google&q="+arg+"&google_domain=google.com&gl=us&hl=en&tbm=isch&api_key=e943bb910496b0c2f927da2a95bc84819d19c75b8811a84d6375792693177796"
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+    response = urlopen(url)
+    #data_json = json.loads(response.read())
+    data_json = response.read()
+    #print(data_json)
+    print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+
+    IMG_REG = r"thumbnail\": \"(https:.+?)\""
+    contents = re.findall(IMG_REG, str(data_json))
+
+    print(contents)
+    pages = len(contents)
+    embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+    embed.set_image(url=contents[0])
+    embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+    embed.set_footer(text="footer")
+    message = await ctx.send(embed=embed)
+    # getting the message object for editing and reacting
+
+    await message.add_reaction("◀️")
+    await message.add_reaction("▶️")
+
+    print(ctx.author)
+
+    def check(reaction, user):
+        return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+
+            if str(reaction.emoji) == "▶️" and cur_page != pages:
+                cur_page += 1
+                new_embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed.set_image(url=contents[cur_page-1])
+                print(contents[cur_page-1])
+                new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+                new_embed.set_footer(text="footer")
+                await message.edit(embed=new_embed)
+                await message.remove_reaction(reaction, user)
+
+            elif str(reaction.emoji) == "◀️" and cur_page > 1:
+                cur_page -= 1
+                new_embed=discord.Embed(title="Help page", description=(f"Page {cur_page}/{pages}:\n{contents[cur_page-1]}"), color=0x00ffc8)
+                new_embed.set_image(url=contents[cur_page-1])
+                new_embed.set_author(name=ctx.author.display_name,icon_url=ctx.author.avatar_url)
+                new_embed.set_footer(text="footer")
+                await message.edit(embed=new_embed)
+                await message.remove_reaction(reaction, user)
+
+            else:
+                await message.remove_reaction(reaction, user)
+                # removes reactions if the user tries to go forward on the last page or
+                # backwards on the first page
+        except asyncio.TimeoutError:
+            await message.delete()
+            break
+            # ending 
+
+@bot.command()
 async def giphy(ctx, arg):
     cur_page = 1
 
