@@ -40,7 +40,7 @@ async def helper(ctx):
 async def url(ctx, arg):
     await ctx.send("Loading...")
 
-    search = GoogleSearch({"api_key": "9a44608178a3b7ad9888bb12ed05a1992916835b8af2d5bc1fc164a5f8b1201d"})  
+    search = GoogleSearch({"api_key": ""})  
 
     results = []
     search.params_dict['q'] = arg
